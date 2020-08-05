@@ -56,7 +56,7 @@ from unyt.exceptions import (
     UnitConversionError,
     UnitOperationError,
     UnitParseError,
-    UnitsNotReducible,
+    UnitsNotReducible, UnitOperationWarning,
 )
 from unyt.testing import assert_allclose_units, _process_warning
 from unyt.unit_symbols import cm, m, g, degree
@@ -2423,3 +2423,15 @@ def test_kip():
 
 def test_ksi():
     assert_allclose_units(unyt_quantity(1, "lbf/inch**2"), unyt_quantity(0.001, "ksi"))
+
+
+def test_non_strict_registry():
+
+    reg = UnitRegistry(strict=False)
+
+    a1 = unyt_array([1, 2, 3], "m", registry=reg)
+    a2 = unyt_array([4, 5, 6], "kg", registry=reg)
+
+    with pytest.warns(UnitOperationWarning):
+        answer = operator.add(a1, a2)
+        assert_array_equal(answer, [5, 7, 9])
